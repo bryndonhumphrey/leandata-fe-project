@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.css";
+import "../node_modules/semantic-ui-react/"
 import Home from "./components/pages/Home";
 import Navbar from "./components/layout/Navbar";
 import {
@@ -16,6 +17,12 @@ import DeleteUser from "./components/users/DeleteUser";
 import AddExpense from "./components/expenses/AddExpense";
 import EditExpense from "./components/expenses/EditExpense";
 import DeleteExpense from "./components/expenses/DeleteExpense";
+
+//done differently than an import since apparently the semantic-react-ui library doesn't include a semantic.css file
+const styleLink = document.createElement("link");
+styleLink.rel = "stylesheet";
+styleLink.href = "https://cdn.jsdelivr.net/npm/semantic-ui/dist/semantic.min.css";
+document.head.appendChild(styleLink);
 
 function App(props) {
   return (

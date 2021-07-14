@@ -1,18 +1,46 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useHistory, useParams } from "react-router-dom";
+import firebase from "../../firebase";
 
 const EditUser = () => {
+  //routing and getting unique id that was encoded in URL
   let history = useHistory();
   const { id } = useParams();
+  //initializing state
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
     budget: "",  
     id: "",
   });
+  //firebase collection
+  const dbUsers = firebase.firestore().collection("users");
 
-  const { firstName, lastName, budget, } = user;
+  const loadUser = async () => {
+    setLoading(true);
+    dbUsers.onSnapshot((querySnapshot) => {
+      let items = [];
+      querySnapshot.forEach((doc) => {
+        items.push(doc.data());
+      });
+      //destucturing firebase users, using the index of the item with the same unique ID that was passed in the url
+      const destructedItems = items.map(item=> item.id)
+      var indexNum = null;
+      for(let i = 0; i < destructedItems.length; i++){
+        if (destructedItems[i] == id){
+          indexNum = i;
+        } else{
+          continue
+        }
+      }
+      setUser(items[indexNum]);
+      setLoading(false);
+    })
+  };
+
+  //form input to state logic
+  const { firstName, lastName, budget } = user;
   const onInputChange = e => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
@@ -21,16 +49,27 @@ const EditUser = () => {
     loadUser();
   }, []);
 
+  //updating user data in firebase
   const onSubmit = async e => {
     e.preventDefault();
-    await axios.put(`http://localhost:3003/users/${id}`, user);
+    //destructering user object from state so it will set into firebase properly
+    const { firstName, lastName, budget, id } = user;
+    const dbUser = await dbUsers.where('id', '==', id).get()
+    //START this code is funky but so far it is the only way i've found to get the pre-populated firebase id's aka doc id
+    var docId = null;
+    if (dbUser.empty) {
+      console.log('No matching documents.');
+      return;
+    }  
+    dbUser.forEach(doc => {
+      docId = doc.id ;
+    });
+    const res = await dbUsers.doc(docId).set(user,{ merge: true });
+    //END this code is funky but so far it is the only way i've found to get the pre-populated firebase id's aka doc id
     history.push("/");
   };
 
-  const loadUser = async () => {
-    const result = await axios.get(`http://localhost:3003/users/${id}`);
-    setUser(result.data);
-  };
+  //template
   return (
     <div className="container">
       <div className="w-75 mx-auto shadow p-5">
@@ -58,7 +97,7 @@ const EditUser = () => {
           </div>
           <div className="form-group">
             <input
-              type="email"
+              type="text"
               className="form-control form-control-lg"
               placeholder="Enter Budget (optional)"
               name="budget"

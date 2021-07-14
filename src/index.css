@@ -19,3 +19,9 @@ code {
 .btn {
   margin-left: 5px;
 }
+
+.form-control.form-control-lg {
+  font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+  font-size: 14px;
+  line-height: 1.4285em;
+}

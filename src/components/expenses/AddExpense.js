@@ -1,80 +1,99 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios'
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import firebase from "../../firebase";
 import { doc, setDoc } from "firebase/firestore";
+import { Dropdown } from 'semantic-ui-react'
 
 
 const AddExpense = () => {
   let history = useHistory();
+  const categoryOptions = [
+    { key: 'food', value: 'food', text: 'food' },
+    { key: 'travel', value: 'travel', text: 'travel' },
+    { key: 'health', value: 'health', text: 'health' },
+    { key: 'supplies', value: 'supplies', text: 'supplies' },
+  ]
   const [loading, setLoading] = useState(false);
   const [newId, setNewID] = useState({
     count: "",
   })
-  const [user, setUser] = useState({
-    firstName: "",
-    lastName: "",
-    budget: "",  
+  const [expense, setExpense] = useState({
+    fullName: "",
+    category: "",
+    cost: "",
+    date: "",  
     id: "",
   });
-  const dbUsers = firebase.firestore().collection("users");
+  const dbExpenses = firebase.firestore().collection("expenses");
   const dbCounters = firebase.firestore().collection("counters");
 
   useEffect(() => {
-    getUsers();
+    getExpense();
   }, []);
 
-  const getUsers = async () => {
+  const getExpense = async () => {
     setLoading(true);
     dbCounters.onSnapshot((querySnapshot) => {
       const items = [];
       querySnapshot.forEach((doc) => {
         items.push(doc.data());
       });
-      var userCounter = items.pop();
-      var newId = (Number(userCounter.count) + 1);
-      setUser({...user, id: newId});
+      var expenseCounter = items[0];
+      console.log(expenseCounter)
+      var newId = (Number(expenseCounter.count) + 1);
+      console.log(newId)
+      setExpense({...expense, id: newId});
       setNewID({...newId, count: Number(newId)});
-
       setLoading(false);
     })
   };
 
-  const { firstName, lastName, budget, id } = user;
+  const { fullName, category, cost, date, id } = expense;
   const onInputChange = e => {
-    setUser({ ...user, [e.target.name]: e.target.value });
+    setExpense({ ...expense, [e.target.name]: e.target.value });
   };
 
 
   const onSubmit = async e => {
     e.preventDefault();
-    const res = await dbUsers.doc().set(user);
-    const res2 = await dbCounters.doc("users").set(newId);
+    const res = await dbExpenses.doc().set(expense);
+    const res2 = await dbCounters.doc("expenses").set(newId);
     history.push("/");
   };
   
   return (
     <div className="container">
       <div className="w-75 mx-auto shadow p-5">
-        <h2 className="text-center mb-4">Add A User</h2>
+        <h2 className="text-center mb-4">Add Expense</h2>
         <form onSubmit={e => onSubmit(e)}>
           <div className="form-group">
             <input
               type="text"
               className="form-control form-control-lg"
-              placeholder="Enter First Name"
-              name="firstName"
-              value={firstName}
+              placeholder="Select Full Name"
+              name="fullName"
+              value={fullName}
               onChange={e => onInputChange(e)}
             />
           </div>
           <div className="form-group">
-            <input
-              type="text"
+            <Dropdown
               className="form-control form-control-lg"
-              placeholder="Enter Last Name"
-              name="lastName"
-              value={lastName}
+              placeholder='Select Category'
+              fluid
+              search
+              selection
+              options={categoryOptions}
+            />
+          </div>
+          <div className="form-group">
+            <input
+              type="number"
+              className="form-control form-control-lg"
+              placeholder="Enter Cost"
+              name="cost"
+              value={cost}
               onChange={e => onInputChange(e)}
             />
           </div>
@@ -82,9 +101,9 @@ const AddExpense = () => {
             <input
               type="number"
               className="form-control form-control-lg"
-              placeholder="Enter Budget (Optional)"
-              name="budget"
-              value={budget}
+              placeholder="Enter Date"
+              name="date"
+              value={date}
               onChange={e => onInputChange(e)}
             />
           </div>
@@ -99,7 +118,7 @@ const AddExpense = () => {
               disabled
             />
           </div>
-          <button className="btn btn-primary btn-block">Add User</button>
+          <button className="btn btn-primary btn-block">Add Expense</button>
         </form>
       </div>
     </div>

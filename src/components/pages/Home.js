@@ -1,12 +1,13 @@
-import React, { useState, useEffect, componentDidMount, componentDidUpdate } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import firebase from "../../firebase";
 
 const Home = () => {
+  //setting states  
   const [users, setUser] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
+  //firebase collections
   const dbUsers = firebase.firestore().collection("users");
   const dbExpense = firebase.firestore().collection("expenses");
 
@@ -37,17 +38,9 @@ const Home = () => {
       setExpenses(items);
       setLoading(false);
     })
-    /*
-    const result = await axios.get("http://localhost:3003/users");
-    setUser(result.data.reverse());
-    */
   };
 
-  const deleteUser = async id => {
-    await axios.delete(`http://localhost:3003/users/${id}`);
-    //loadUsers();
-  };
-
+  //template
   return (
     <div>
       <div className="container">
@@ -56,7 +49,7 @@ const Home = () => {
           <table class="table border shadow">
             <thead class="thead-dark">
               <tr>
-                <th scope="col">#</th>
+                <th scope="col">Unique id</th>
                 <th scope="col">Name</th>
                 <th scope="col">User Name</th>
                 <th>Action</th>
@@ -65,7 +58,7 @@ const Home = () => {
             <tbody>
               {users.map((user, index) => (
                 <tr>
-                  <th scope="row">{index + 1}</th>
+                  <th scope="row">{user.id}</th>
                   <td>{user.firstName}</td>
                   <td>{user.lastName}</td>
                   <td>
@@ -78,7 +71,6 @@ const Home = () => {
                     <Link
                       class="btn btn-danger"
                       to={`/users/delete/${user.id}`}
-                      //onClick={() => deleteUser(user.id)}
                     >
                       Delete
                     </Link>
@@ -95,7 +87,7 @@ const Home = () => {
           <table class="table border shadow">
             <thead class="thead-dark">
               <tr>
-                <th scope="col">#</th>
+                <th scope="col">Unique id</th>
                 <th scope="col">Full Name</th>
                 <th scope="col">Category</th>
                 <th scope="col">Cost</th>
@@ -106,7 +98,7 @@ const Home = () => {
             <tbody>
               {expenses.map((expense, index) => (
                 <tr>
-                  <th scope="row">{index + 1}</th>
+                  <th scope="row">{expense.id}</th>
                   <td>{expense.fullName}</td>
                   <td>{expense.category}</td>
                   <td>{expense.cost}</td>

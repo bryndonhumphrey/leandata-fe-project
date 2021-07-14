@@ -6,9 +6,11 @@ import { doc, setDoc } from "firebase/firestore";
 
 
 const AddUser = () => {
+  //routing
   let history = useHistory();
+  //state intiation  
   const [loading, setLoading] = useState(false);
-  const [newId, setNewID] = useState({
+  const [newUniqueId, setNewUniqueId] = useState({
     count: "",
   })
   const [user, setUser] = useState({
@@ -17,42 +19,47 @@ const AddUser = () => {
     budget: "",  
     id: "",
   });
+  //Firebase collections
   const dbUsers = firebase.firestore().collection("users");
   const dbCounters = firebase.firestore().collection("counters");
 
   useEffect(() => {
-    getUsers();
+    getNewUniqueID();
   }, []);
 
-  const getUsers = async () => {
+  //getting and assigning state for new Unique ID's from Firebase
+  const getNewUniqueID = async () => {
     setLoading(true);
     dbCounters.onSnapshot((querySnapshot) => {
       const items = [];
       querySnapshot.forEach((doc) => {
         items.push(doc.data());
       });
-      var userCounter = items.pop();
-      var newId = (Number(userCounter.count) + 1);
-      setUser({...user, id: newId});
-      setNewID({...newId, count: Number(newId)});
+      var userCounter = items.pop(); //last index in counters keeps track of new unique ID's
+      var newUniqueId = (Number(userCounter.count) + 1);
+      setUser({...user, id: newUniqueId});
+      setNewUniqueId({...newUniqueId, count: Number(newUniqueId)});
 
       setLoading(false);
     })
   };
 
+  //form input to state logic  
   const { firstName, lastName, budget, id } = user;
   const onInputChange = e => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
 
+  //adding user in FB and updating unique ID for future users  
   const onSubmit = async e => {
     e.preventDefault();
     const res = await dbUsers.doc().set(user);
-    const res2 = await dbCounters.doc("users").set(newId);
+    const res2 = await dbCounters.doc("users").set(newUniqueId);
     history.push("/");
   };
   
+  //template
   return (
     <div className="container">
       <div className="w-75 mx-auto shadow p-5">
